@@ -2,7 +2,7 @@
 /*
 Plugin Name: WooCommerce Wannafind/Curanet Gateway
 Description: Extends WooCommerce with an Wannafind/Curanet gateway.
-Version: 1.1.3
+Version: 1.2.0
 Author: Johnnie Bertelsen - Inzite
 Author URI: http://www.inzite.dk/
 GitHub Plugin URI: https://github.com/johnnietb/Inzite-Wannafind-Gateway
@@ -69,7 +69,8 @@ function woocommerce_gateway_wannafind_init() {
 					'card_name'   	=> $this->get_option( 'card_name' ),
 					'card_code'      => $this->get_option( 'card_code' ),
 					'card_min_fee'      => $this->get_option( 'card_min_fee' ),
-					'card_percentage_fee'           => $this->get_option( 'card_percentage_fee' )
+					'card_percentage_fee'           => $this->get_option( 'card_percentage_fee' ),
+					'card_interval_fee'           => $this->get_option( 'card_interval_fee' )
 				)
 			)
 			);
@@ -158,21 +159,22 @@ function woocommerce_gateway_wannafind_init() {
     	ob_start();
 	    ?>
 	    <tr valign="top">
-            <th scope="row" class="titledesc"><?php _e( 'Kort typer', 'woocommerce' ); ?>:</th>
-            <td class="forminp" id="card_fees">
+          <th scope="row" class="titledesc"><?php _e( 'Kort typer', 'woocommerce' ); ?>:</th>
+          <td class="forminp" id="card_fees">
 			    <table class="widefat wc_input_table sortable" cellspacing="0">
 		    		<thead>
 		    			<tr>
 		    				<th class="sort">&nbsp;</th>
 		    				<th><?php _e( 'Kort type', 'woocommerce' ); ?></th>
 			            	<th><?php _e( 'Kort code', 'woocommerce' ); ?></th>
-			            	<th><?php _e( 'Min gebyr', 'woocommerce' ); ?></th>
-			            	<th><?php _e( '% gebyr', 'woocommerce' ); ?></th>
+										<th><?php _e( 'Gebyr i %<br/> <sup>(1% = 0,01)</sup>', 'woocommerce' ); ?></th>
+			            	<th><?php _e( 'Fast gebyr i kr<br/> <sup>(mulighed for interval)</sup>', 'woocommerce' ); ?></th>
+										<th><?php _e( 'Beløbs interval?', 'woocommerce' ); ?></th>
 		    			</tr>
 		    		</thead>
 		    		<tfoot>
 		    			<tr>
-		    				<th colspan="5"><a href="#" class="add button"><?php _e( '+ Tilføj kort', 'woocommerce' ); ?></a> <a href="#" class="remove_rows button"><?php _e( 'Fjern valgte kort', 'woocommerce' ); ?></a></th>
+		    				<th colspan="6"><a href="#" class="add button"><?php _e( '+ Tilføj kort', 'woocommerce' ); ?></a> <a href="#" class="remove_rows button"><?php _e( 'Fjern valgte kort', 'woocommerce' ); ?></a></th>
 		    			</tr>
 		    		</tfoot>
 		    		<tbody class="cards">
@@ -186,32 +188,63 @@ function woocommerce_gateway_wannafind_init() {
 		                			<td class="sort"></td>
 		                			<td><input type="text" value="' . esc_attr( $card['card_name'] ) . '" name="card_name[' . $i . ']" /></td>
 		                			<td><input type="text" value="' . esc_attr( $card['card_code'] ) . '" name="card_code[' . $i . ']" /></td>
-		                			<td><input type="text" value="' . esc_attr( $card['card_min_fee'] ) . '" name="card_min_fee[' . $i . ']" /></td>
-		                			<td><input type="text" value="' . esc_attr( $card['card_percentage_fee'] ) . '" name="card_percentage_fee[' . $i . ']" /></td>
+													<td><input type="text" value="' . esc_attr( $card['card_percentage_fee'] ) . '" name="card_percentage_fee[' . $i . ']" /></td>
+		                			<td data-size="' . $i . '"><input type="text" value="' . esc_attr( $card['card_min_fee'] ) . '" name="card_min_fee[' . $i . ']" />';
+													if (intval( $card['card_interval_fee'] )) {
+														echo '
+														<input type="text" value="' . esc_attr( $card['card_min_fee_1'] ) . '" name="card_min_fee_1[' . $i . ']" class="extra_fees" />
+														<input type="text" value="' . esc_attr( $card['card_min_fee_2'] ) . '" name="card_min_fee_2[' . $i . ']" class="extra_fees" />
+														<input type="text" value="' . esc_attr( $card['card_min_fee_3'] ) . '" name="card_min_fee_3[' . $i . ']" class="extra_fees" />
+														';
+													}
+												echo '</td>
+													<td align="center"><input type="checkbox" value="1" class="card_interval_fee" name="card_interval_fee[' . $i . ']" ' . (intval( $card['card_interval_fee'] ) ? 'checked' : '').' /></td>
 			                    </tr>';
+													// <td><input type="text" value="' . esc_attr( $card['card_min_fee_1'] ) . '" name="card_min_fee_1[' . $i . ']" /></td>
+													// <td><input type="text" value="' . esc_attr( $card['card_min_fee_2'] ) . '" name="card_min_fee_2[' . $i . ']" /></td>
+													// <td><input type="text" value="' . esc_attr( $card['card_min_fee_3'] ) . '" name="card_min_fee_3[' . $i . ']" /></td>
 		            		}
 		            	}
 		            	?>
 		        	</tbody>
 		        </table>
 		       	<script type="text/javascript">
-					jQuery(function() {
-						jQuery('#card_fees').on( 'click', 'a.add', function(){
+							jQuery(function() {
+								jQuery('#card_fees').on( 'click', 'a.add', function(){
 
-							var size = jQuery('#card_fees tbody .card').size();
+									var size = jQuery('#card_fees tbody .card').size();
 
-							jQuery('<tr class="card">\
-		                			<td class="sort"></td>\
-		                			<td><input type="text" name="card_name[' + size + ']" /></td>\
-		                			<td><input type="text" name="card_code[' + size + ']" /></td>\
-		                			<td><input type="text" name="card_min_fee[' + size + ']" /></td>\
-		                			<td><input type="text" name="card_percentage_fee[' + size + ']" /></td>\
-			                    </tr>').appendTo('#card_fees table tbody');
+									jQuery('<tr class="card">\
+				                			<td class="sort"></td>\
+				                			<td><input type="text" name="card_name[' + size + ']" /></td>\
+				                			<td><input type="text" name="card_code[' + size + ']" /></td>\
+															<td><input type="text" name="card_percentage_fee[' + size + ']" /></td>\
+				                			<td data-size="'+size+'"><input type="text" name="card_min_fee[' + size + ']" /></td>\
+															<td align="center"><input type="checkbox" value="1" class="card_interval_fee" name="card_interval_fee[' + size + ']" /></td>\
+					                    </tr>').appendTo('#card_fees table tbody');
 
-							return false;
-						});
-					});
-				</script>
+															// <td><input type="text" name="card_min_fee_1[' + size + ']" /></td>\
+															// <td><input type="text" name="card_min_fee_2[' + size + ']" /></td>\
+															// <td><input type="text" name="card_min_fee_3[' + size + ']" /></td>\
+
+									return false;
+								});
+
+								jQuery('.card_interval_fee').click( function(){
+									var td = jQuery(this).parent().prev();
+									var size = td.attr('data-size');
+									if (jQuery(this).is(':checked')) {
+										jQuery('<input type="text" value="" name="card_percentage_fee_1[' + size + ']" placeholder="50 - 100" class="extra_fees" />\
+											<input type="text" value="" name="card_percentage_fee_2[' + size + ']" placeholder="100 - 500" class="extra_fees" />\
+											<input type="text" value="" name="card_percentage_fee_3[' + size + ']" placeholder="500 - ?" class="extra_fees" />\
+										').appendTo(td);
+									} else {
+										jQuery( '.extra_fees', td).remove();
+									}
+
+								});
+							});
+						</script>
             </td>
 	    </tr>
         <?php
@@ -249,6 +282,22 @@ function woocommerce_gateway_wannafind_init() {
 					'card_percentage_fee'			=> array(
 						'label' => __( '% gebyr', 'woocommerce' ),
 						'value' => $card->card_percentage_fee
+					),
+					'card_interval_fee'			=> array(
+						'label' => __( 'Beløbs interval', 'woocommerce' ),
+						'value' => $card->card_interval_fee
+					),
+					'card_min_fee_1'			=> array(
+						'label' => __( '50,01->100', 'woocommerce' ),
+						'value' => $card->card_min_fee_1
+					),
+					'card_min_fee_2'			=> array(
+						'label' => __( '100,01->500', 'woocommerce' ),
+						'value' => $card->card_min_fee_2
+					),
+					'card_min_fee_3'			=> array(
+						'label' => __( '500,01->', 'woocommerce' ),
+						'value' => $card->card_min_fee_3
 					)
 				), $order_id );
 
@@ -275,7 +324,11 @@ function woocommerce_gateway_wannafind_init() {
 			$card_name   = array_map( 'wc_clean', $_POST['card_name'] );
 			$card_code      = array_map( 'wc_clean', $_POST['card_code'] );
 			$card_min_fee      = array_map( 'wc_clean', $_POST['card_min_fee'] );
+			$card_min_fee_1      = array_map( 'wc_clean', $_POST['card_min_fee_1'] );
+			$card_min_fee_2      = array_map( 'wc_clean', $_POST['card_min_fee_2'] );
+			$card_min_fee_3      = array_map( 'wc_clean', $_POST['card_min_fee_3'] );
 			$card_percentage_fee           = array_map( 'wc_clean', $_POST['card_percentage_fee'] );
+			$card_interval_fee           = array_map( 'wc_clean', $_POST['card_interval_fee'] );
 
 			foreach ( $card_name as $i => $name ) {
 				if ( ! isset( $card_name[ $i ] ) ) {
@@ -283,10 +336,14 @@ function woocommerce_gateway_wannafind_init() {
 				}
 
 	    		$cards[] = array(
-	    			'card_name'   => $card_name[ $i ],
-					'card_code'      => $card_code[ $i ],
-					'card_min_fee'           => $card_min_fee[ $i ],
-					'card_percentage_fee'            => $card_percentage_fee[ $i ]
+	    			'card_name'							=> $card_name[ $i ],
+						'card_code'							=> $card_code[ $i ],
+						'card_min_fee'					=> $card_min_fee[ $i ],
+						'card_percentage_fee'		=> $card_percentage_fee[ $i ],
+						'card_interval_fee'			=> $card_interval_fee[ $i ],
+						'card_min_fee_1'					=> $card_min_fee_1[ $i ],
+						'card_min_fee_2'					=> $card_min_fee_2[ $i ],
+						'card_min_fee_3'					=> $card_min_fee_3[ $i ]
 	    		);
 	    	}
     	}
@@ -313,27 +370,39 @@ function woocommerce_gateway_wannafind_init() {
 
 			$i = 0;
 		    if ( $this->card_details ) {
-		        foreach ( $this->card_details as $card ) {
-					$payment_min_fee = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee'])));
-					$payment_percent_fee = floatval(str_replace(",", ".", esc_attr( $card['card_percentage_fee'] )));
-					$payment_card_type = esc_attr( $card['card_code'] );
+		      foreach ( $this->card_details as $card ) {
+						$payment_min_fee = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee'])));
+						$payment_min_fee_1 = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee_1'])));
+						$payment_min_fee_2 = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee_2'])));
+						$payment_min_fee_3 = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee_3'])));
+						$payment_percent_fee = floatval(str_replace(",", ".", esc_attr( $card['card_percentage_fee'] )));
+						$payment_interval_fee = intval(esc_attr($card['card_interval_fee']));
+						$payment_card_type = esc_attr( $card['card_code'] );
+						if ($payment_interval_fee) {
+							if ($total_ex_fees > 50 && $total_ex_fees <= 100) {
+								$payment_min_fee = $payment_min_fee_1;
+							} elseif ($total_ex_fees > 100 && $total_ex_fees <= 500) {
+								$payment_min_fee = $payment_min_fee_2;
+							} elseif ($total_ex_fees > 500) {
+								$payment_min_fee = $payment_min_fee_3;
+							}
+						}
+						if ( ($total_ex_fees*$payment_percent_fee) < $payment_min_fee) {
+							$payment_fee = $payment_min_fee;
+						} else {
+							$payment_fee = ($total_ex_fees*$payment_percent_fee);
+						}
 
-					if ( ($total_ex_fees*$payment_percent_fee) < $payment_min_fee) {
-						$payment_fee = $payment_min_fee;
-					} else {
-						$payment_fee = ($total_ex_fees*$payment_percent_fee);
-					}
+		        echo '<div><span><input type="radio" name="payment_card_type" value="'. $payment_card_type .'" data-minfee="'.$payment_min_fee.'" data-feepercent="'.$payment_percent_fee.'" data-fee="'.$payment_fee.'" data-minfee_1="'.$payment_min_fee_1.'" data-minfee_2="'.$payment_min_fee_2.'" data-minfee_3="'.$payment_min_fee_3.'"';
 
-		            echo '<div><span><input type="radio" name="payment_card_type" value="'. $payment_card_type .'" data-minfee="'.$payment_min_fee.'" data-feepercent="'.$payment_percent_fee.'" data-fee="'.$payment_fee.'"';
-
-		            if (($i == 0 && !isset($_COOKIE['payment_card_type'])) || $_COOKIE['payment_card_type'] == $payment_card_type) {
-						echo ' checked';
-					}
-					echo ' /><img style="margin:0 6px;" src="'. dirname( plugin_dir_url( __FILE__ ) ) .'/'. dirname( plugin_basename( __FILE__ ) ) .'/cards/'.str_replace(",", "_", $payment_card_type).'.png" /> ' . esc_attr( $card['card_name'] ) . ' (+'. str_replace(".",",", str_replace(",","",number_format($payment_fee,2))) .' '.$payment_currency.')</span></div>';
-					//echo 'test: ' . $_COOKIE['payment_card_type'] . ' : ' . $_POST['payment_card_type'];
+		        if (($i == 0 && !isset($_COOKIE['payment_card_type'])) || $_COOKIE['payment_card_type'] == $payment_card_type) {
+							echo ' checked';
+						}
+						echo ' /><img style="margin:0 6px;" src="'. dirname( plugin_dir_url( __FILE__ ) ) .'/'. dirname( plugin_basename( __FILE__ ) ) .'/cards/'.str_replace(",", "_", $payment_card_type).'.png" /> ' . esc_attr( $card['card_name'] ) . ' (+'. str_replace(".",",", str_replace(",","",number_format($payment_fee,2))) .' '.$payment_currency.')</span></div>';
+						//echo 'test: ' . $_COOKIE['payment_card_type'] . ' : ' . $_POST['payment_card_type'];
 			        $i++;
-		        }
-		        echo '<script language="javascript">payment_cards();</script>';
+		      }
+		      echo '<script language="javascript">payment_cards();</script>';
 		    }
 
 
@@ -356,14 +425,16 @@ function woocommerce_gateway_wannafind_init() {
 				global $woocommerce;
 				$payment_card_type = $_COOKIE['payment_card_type'];
 				$payment_fee = 0;
-				//$total_ex_fees = $woocommerce->cart->total;
+				$payment_type = 'creditcard';
 				$total_w_fees = number_format($order->get_total(),2);
-
+				if (strtolower($payment_card_type) == 'mpo') {
+					$payment_type = 'mpo';
+				}
 				$gateway_form = "
 					<form name=\"wannafind_payment\" action=\"https://betaling.curanet.dk/paymentwindow/\" method=\"post\">
 					  <input type=\"hidden\" name=\"shopid\" value=\"" . $this->shopid . "\" />
 					  <input type=\"hidden\" name=\"amount\" value=\"" .  ( str_replace( ".","", str_replace( ",","", $total_w_fees ) ) ) . "\" />
-				    <input type=\"hidden\" name=\"paytype\" value=\"creditcard\" />
+				    <input type=\"hidden\" name=\"paytype\" value=\"" . $payment_type . "\" />
 				    <input type=\"hidden\" name=\"cardtype\" value=\"" . $payment_card_type . "\" />
 				    <input type=\"hidden\" name=\"currency\" value=\"" . $this->currency . "\" />
 				    <input type=\"hidden\" name=\"orderidprefix\" value=\"" . substr( $this->order_prefix , 0, 4) . "\" />
