@@ -2,7 +2,7 @@
 /*
 Plugin Name: WooCommerce Wannafind/Curanet Gateway
 Description: Extends WooCommerce with an Wannafind/Curanet gateway.
-Version: 1.2.1
+Version: 1.2.2
 Author: Johnnie Bertelsen - Inzite
 Author URI: http://www.inzite.dk/
 GitHub Plugin URI: https://github.com/johnnietb/Inzite-Wannafind-Gateway
@@ -510,9 +510,31 @@ function woocommerce_gateway_wannafind_init() {
 					$total_ex_fees = number_format( $woocommerce->cart->cart_contents_total + $woocommerce->cart->tax_total + $woocommerce->cart->shipping_tax_total + $woocommerce->cart->shipping_total - $woocommerce->cart->discount_total, 2, '.', '');
 
 				    foreach ( $this->card_details as $card ) {
+						// $payment_min_fee = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee'])));
+						// $payment_percent_fee = floatval(str_replace(",", ".", esc_attr( $card['card_percentage_fee'] )));
+						// $payment_card_type = esc_attr( $card['card_code'] );
+						// if ( ($total_ex_fees*$payment_percent_fee) < $payment_min_fee) {
+						// 	$payment_fee = $payment_min_fee;
+						// } else {
+						// 	$payment_fee = ($total_ex_fees*$payment_percent_fee);
+						// }
+
 						$payment_min_fee = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee'])));
+						$payment_min_fee_1 = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee_1'])));
+						$payment_min_fee_2 = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee_2'])));
+						$payment_min_fee_3 = floatval(str_replace(",", ".", esc_attr( $card['card_min_fee_3'])));
 						$payment_percent_fee = floatval(str_replace(",", ".", esc_attr( $card['card_percentage_fee'] )));
+						$payment_interval_fee = intval(esc_attr($card['card_interval_fee']));
 						$payment_card_type = esc_attr( $card['card_code'] );
+						if ($payment_interval_fee) {
+							if ($total_ex_fees > 50 && $total_ex_fees <= 100) {
+								$payment_min_fee = $payment_min_fee_1;
+							} elseif ($total_ex_fees > 100 && $total_ex_fees <= 500) {
+								$payment_min_fee = $payment_min_fee_2;
+							} elseif ($total_ex_fees > 500) {
+								$payment_min_fee = $payment_min_fee_3;
+							}
+						}
 						if ( ($total_ex_fees*$payment_percent_fee) < $payment_min_fee) {
 							$payment_fee = $payment_min_fee;
 						} else {
