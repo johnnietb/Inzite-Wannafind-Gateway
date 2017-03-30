@@ -1,5 +1,3 @@
-jQuery.noConflict();
-
 jQuery(window).load(function() {
 
   payment_cards();
