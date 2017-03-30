@@ -12,6 +12,10 @@ include( plugin_dir_path( __FILE__ ) . 'inc/shortcodes.php');
 
 add_action('plugins_loaded', 'woocommerce_gateway_wannafind_init', 0);
 
+if (!wp_script_is( 'jquery-cookie', 'enqueued' )) {
+  wp_enqueue_script('jquery-cookie', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js', array('jquery' ), 1.0);
+}
+
 wp_enqueue_script('wannafind', dirname( plugin_dir_url( __FILE__ ) ) .'/'. dirname( plugin_basename( __FILE__ ) ) .'/js/wannafind.js', array('jquery', 'jquery-cookie' ), 1.0);
 
 
