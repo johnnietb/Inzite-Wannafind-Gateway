@@ -16,7 +16,7 @@ function get_checkout_form() {
 };
 
 function fill_checkout_form() {
-  if ( jQuery.cookie('checkout_form_data') ) {
+  if ( jQuery.cookie('checkout_form_data') && jQuery('form[name="checkout"]').length ) {
 
     // Get form data from cookie and create object
     var data = jQuery.cookie('checkout_form_data').split("&");
