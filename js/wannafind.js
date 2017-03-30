@@ -1,4 +1,6 @@
-$(window).load(function() {
+jQuery.noConflict();
+
+jQuery(window).load(function() {
 
   payment_cards();
 
@@ -9,28 +11,28 @@ $(window).load(function() {
 
 function get_checkout_form() {
   // Get checkout form data
-  var $form = $('form[name="checkout"]'),
+  var $form = jQuery('form[name="checkout"]'),
       sData = $form.serialize();
   // Store checkout form data in cookie
-  $.cookie('checkout_form_data',sData, {path: "/"});
+  jQuery.cookie('checkout_form_data',sData, {path: "/"});
 };
 
 function fill_checkout_form() {
-  if ( $.cookie('checkout_form_data') ) {
+  if ( jQuery.cookie('checkout_form_data') ) {
 
     // Get form data from cookie and create object
-    var data = $.cookie('checkout_form_data').split("&");
+    var data = jQuery.cookie('checkout_form_data').split("&");
     var obj={};
     for(var key in data) {
         obj[data[key].split("=")[0]] = data[key].split("=")[1];
     }
 
     // reset the form
-  	$('form[name="checkout"]').get(0).reset();
+  	jQuery('form[name="checkout"]').get(0).reset();
 
   	//reset form values from json object
-  	$.each(obj, function(name, val) {
-  		var $el = $('[name="' + name + '"]'),
+  	jQuery.each(obj, function(name, val) {
+  		var $el = jQuery('[name="' + name + '"]'),
   			  type = $el.attr('type');
   		switch (type) {
   			case 'checkbox':
@@ -47,39 +49,39 @@ function fill_checkout_form() {
 }
 
 function payment_cards() {
-  if ( $.cookie('payment_method') != "" ) {
-      $("#" + $.cookie('payment_method')).prop('checked', true);
+  if ( jQuery.cookie('payment_method') != "" ) {
+      jQuery("#" + jQuery.cookie('payment_method')).prop('checked', true);
   }
 
-  $("input[type=radio][name=payment_method]").each( function() {
-    $(this).change( function() {
+  jQuery("input[type=radio][name=payment_method]").each( function() {
+    jQuery(this).change( function() {
 
-      var id = $(this).attr('id');
-      $.cookie('payment_method', id , {path: "/"});
-      if ($(this).val() != "Wannafind" ) {
-        $.cookie('payment_card_type', 0, {path: "/"});
-        $.cookie('payment_card_fee', 0, {path: "/"});
+      var id = jQuery(this).attr('id');
+      jQuery.cookie('payment_method', id , {path: "/"});
+      if (jQuery(this).val() != "Wannafind" ) {
+        jQuery.cookie('payment_card_type', 0, {path: "/"});
+        jQuery.cookie('payment_card_fee', 0, {path: "/"});
 
         // Save the checkout form to a cookie
         get_checkout_form();
 
         window.location.reload();
       } else {
-        $("input[type=radio][name=payment_card_type]").first().prop('checked', true).change();
+        jQuery("input[type=radio][name=payment_card_type]").first().prop('checked', true).change();
       }
 
     });
 
   });
 
-  $("input[type=radio][name=payment_card_type]").each( function() {
+  jQuery("input[type=radio][name=payment_card_type]").each( function() {
 
-    $(this).change( function(e) {
+    jQuery(this).change( function(e) {
 
-      var selected = $(this).val();
-      var fee = $(this).attr("data-fee");
-      $.cookie('payment_card_type',selected, {path: "/"});
-      $.cookie('payment_card_fee',fee, {path: "/"});
+      var selected = jQuery(this).val();
+      var fee = jQuery(this).attr("data-fee");
+      jQuery.cookie('payment_card_type',selected, {path: "/"});
+      jQuery.cookie('payment_card_fee',fee, {path: "/"});
 
       // Save the checkout form to a cookie
       get_checkout_form();
