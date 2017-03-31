@@ -2,7 +2,7 @@
 /*
 Plugin Name: WooCommerce Wannafind/Curanet Gateway
 Description: Extends WooCommerce with an Wannafind/Curanet gateway.
-Version: 1.2.4
+Version: 1.2.5
 Author: Johnnie Bertelsen - Inzite
 Author URI: http://www.inzite.dk/
 GitHub Plugin URI: https://github.com/johnnietb/Inzite-Wannafind-Gateway
