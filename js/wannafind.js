@@ -22,11 +22,20 @@ function fill_checkout_form() {
     var data = jQuery.cookie('checkout_form_data').split("&");
     var obj={};
     for(var key in data) {
-        obj[data[key].split("=")[0]] = data[key].split("=")[1];
+      obj[data[key].split("=")[0]] = data[key].split("=")[1];
     }
 
-    // reset the form
-  	jQuery('form[name="checkout"]').get(0).reset();
+    // Delete unwanted properties
+    var excludedFields = [
+      'payment_card_type',
+      'payment_method',
+      'shipping_method%5B0%5D',
+      '_wp_http_referer',
+      '_wpnonce'
+    ];
+    for (index = 0, len = excludedFields.length; index < len; ++index) {
+      delete obj[excludedFields[index]];
+    }
 
   	//reset form values from json object
   	jQuery.each(obj, function(name, val) {
